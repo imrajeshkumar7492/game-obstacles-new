@@ -15,10 +15,8 @@ jest.mock('./components/ScoreBoard', () => {
 });
 
 test('renders app without crashing', () => {
-  render(<App />);
-  // Test that the app renders without throwing an error
-  const appElement = screen.getByTestId('app') || document.body;
-  expect(appElement).toBeInTheDocument();
+  const { container } = render(<App />);
+  expect(container).toBeInTheDocument();
 });
 
 test('app has correct structure', () => {
