@@ -26,17 +26,9 @@ Navigate to your GitHub repository → Settings → Secrets and variables → Ac
 #### Optional Secrets (for enhanced features):
 
 ```bash
-# Notification Services (Optional)
+# Only add these if you want notifications
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
-
-# Database Configuration (for production deployments if using external DB)
-PROD_MONGO_URL=mongodb://prod-user:prod-pass@prod-host:27017/proddb
-STAGING_MONGO_URL=mongodb://staging-user:staging-pass@staging-host:27017/stagingdb
-
-# API Keys for External Services (if used in your app)
-OPENAI_API_KEY=your-openai-key
-STRIPE_SECRET_KEY=your-stripe-secret-key
 ```
 
 ### 2. Environment Configuration
