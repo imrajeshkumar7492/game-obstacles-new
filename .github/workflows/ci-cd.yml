@@ -333,7 +333,10 @@ jobs:
     - name: Install frontend dependencies
       run: |
         cd frontend
-        yarn install --frozen-lockfile
+        # Retry yarn install with different strategies
+        yarn install --frozen-lockfile --network-timeout 100000 || \
+        yarn install --frozen-lockfile --registry https://registry.npmjs.org/ || \
+        npm ci
 
     - name: Set up test environment
       run: |
