@@ -56,6 +56,10 @@ Create environments in your repository:
 3. Branch: `gh-pages` (will be created automatically)
 4. Folder: `/` (root)
 
+**Your app will be available at:**
+- **Staging**: `https://yourusername.github.io/repository-name/staging/`
+- **Production**: `https://yourusername.github.io/repository-name/`
+
 ## 🔧 Branch Protection Rules
 
 Set up branch protection for `main` branch:
