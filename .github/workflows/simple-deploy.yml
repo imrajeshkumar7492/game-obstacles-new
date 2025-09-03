@@ -73,17 +73,23 @@ jobs:
             exit 0
           }
           
-      - name: Build application and remove CNAME
+      - name: Build application and ensure default GitHub Pages URL
         run: |
           cd frontend
-          echo "🏗️ Building application..."
+          echo "🏗️ Building application for default GitHub Pages deployment..."
           export ESLINT_NO_DEV_ERRORS=true
           export DISABLE_ESLINT_PLUGIN=true
           export CI=false
           export GENERATE_SOURCEMAP=false
           
-          # Remove stray CNAME before build (sometimes in public/)
-          rm -f public/CNAME
+          # Ensure no custom domain configuration exists
+          echo "🔍 Checking for custom domain files..."
+          if [ -f "public/CNAME" ]; then
+            echo "🗑️ Removing CNAME from public directory"
+            rm -f public/CNAME
+          else
+            echo "✅ No CNAME file found in public directory"
+          fi
           
           # Try with yarn first, then npm as fallback
           if ! yarn build; then
@@ -94,17 +100,23 @@ jobs:
             }
           fi
           
-          # Remove any CNAME file from build directory to force GitHub Pages default URL
-          rm -f build/CNAME
-          echo "🗑️ Removed CNAME file to use default GitHub Pages URL"
+          # Ensure no CNAME file exists in build directory (forces default GitHub Pages URL)
+          if [ -f "build/CNAME" ]; then
+            echo "🗑️ Removing CNAME from build directory to force default GitHub Pages URL"
+            rm -f build/CNAME
+          else
+            echo "✅ No CNAME file found in build directory - will use default GitHub Pages URL"
+          fi
           
-          # Verify build directory exists
+          # Verify build directory exists and list contents
           if [ ! -d "build" ]; then
             echo "❌ Build directory not found"
             exit 1
           fi
           
-          echo "✅ Build completed successfully"
+          echo "📁 Build directory contents:"
+          ls -la build/ | head -10
+          echo "✅ Build completed successfully for default GitHub Pages deployment"
           
       - name: Deploy to GitHub Pages (main → production)
         if: github.ref == 'refs/heads/main'
@@ -112,6 +124,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
+          cname: false  # Explicitly disable custom domain
           
       - name: Deploy to GitHub Pages (develop → staging)
         if: github.ref == 'refs/heads/develop'
@@ -120,21 +133,29 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
           destination_dir: staging
+          cname: false  # Explicitly disable custom domain
           
       - name: Output deployment info
         if: github.event_name != 'pull_request'
         run: |
-          echo "🎉 Deployment completed successfully!"
+          echo "🎉 Deployment completed successfully using default GitHub Pages URL!"
+          echo "🚫 Custom domain removed - using standard GitHub Pages hosting"
+          echo ""
           if [ "${GITHUB_REF}" == "refs/heads/main" ]; then
             echo "🚀 Production deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+            echo "🔗 Your app is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           else
             echo "🚀 Staging deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/"
+            echo "🔗 Your staging app is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/"
           fi
           echo ""
           echo "📋 Next steps:"
           echo "- Enable GitHub Pages in Settings → Pages if not already enabled"
           echo "- Set source to 'gh-pages' branch"
+          echo "- Remove any custom domain from repository settings if present"
           echo "- Wait 2-3 minutes for deployment to be live"
+          echo ""
+          echo "ℹ️  Note: This deployment specifically avoids custom domains and uses the default GitHub Pages URL"
           
       - name: PR Comment
         if: github.event_name == 'pull_request'
