@@ -14,7 +14,7 @@ jobs:
     name: Test and Deploy
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write   # needed for gh-pages push
       pages: write
       id-token: write
     
@@ -72,7 +72,7 @@ jobs:
             exit 0
           }
           
-      - name: Build application (treat warnings as non-fatal)
+      - name: Build application and remove CNAME
         run: |
           cd frontend
           echo "🏗️ Building application..."
@@ -90,6 +90,10 @@ jobs:
               exit 1
             }
           fi
+          
+          # Remove any CNAME file from build directory to force GitHub Pages default URL
+          rm -f build/CNAME
+          echo "🗑️ Removed CNAME file to use default GitHub Pages URL"
           
           # Verify build directory exists
           if [ ! -d "build" ]; then
