@@ -26,7 +26,11 @@ module.exports = {
   rules: {
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'warn',
-    'no-unused-vars': 'warn',
+    'no-unused-vars': ['warn', { 
+      varsIgnorePattern: '^_',
+      argsIgnorePattern: '^_',
+      ignoreRestSiblings: true 
+    }],
     'no-console': 'warn',
     'jsx-a11y/anchor-is-valid': 'warn',
   },
@@ -39,6 +43,8 @@ module.exports = {
     'build/',
     'node_modules/',
     'coverage/',
+    'dist/',
+    'public/',
   ],
   globals: {
     jest: 'readonly',
