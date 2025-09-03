@@ -52,6 +52,22 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Check database connection
+        await client.admin.command('ping')
+        db_status = "healthy"
+    except Exception:
+        db_status = "unhealthy"
+    
+    return {
+        "status": "healthy" if db_status == "healthy" else "unhealthy",
+        "database": db_status,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
