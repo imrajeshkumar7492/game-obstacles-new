@@ -21,20 +21,20 @@ Navigate to your GitHub repository → Settings → Secrets and variables → Ac
 
 #### Required Secrets:
 
-```bash
-# Domain Configuration (Optional - for custom domains)
-STAGING_DOMAIN=staging.yourdomain.com
-PRODUCTION_DOMAIN=yourdomain.com
+**None required for basic GitHub Pages deployment!** 🎉
 
+#### Optional Secrets (for enhanced features):
+
+```bash
 # Notification Services (Optional)
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
 
-# Database Configuration (for production deployments)
+# Database Configuration (for production deployments if using external DB)
 PROD_MONGO_URL=mongodb://prod-user:prod-pass@prod-host:27017/proddb
 STAGING_MONGO_URL=mongodb://staging-user:staging-pass@staging-host:27017/stagingdb
 
-# API Keys for External Services (if used)
+# API Keys for External Services (if used in your app)
 OPENAI_API_KEY=your-openai-key
 STRIPE_SECRET_KEY=your-stripe-secret-key
 ```
