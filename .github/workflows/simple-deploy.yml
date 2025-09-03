@@ -1,4 +1,5 @@
 name: Deploy to GitHub Pages
+
 on:
   push:
     branches: [ main, develop ]
@@ -76,11 +77,13 @@ jobs:
         run: |
           cd frontend
           echo "🏗️ Building application..."
-          # Multiple environment variables to ensure warnings don't fail build
           export ESLINT_NO_DEV_ERRORS=true
           export DISABLE_ESLINT_PLUGIN=true
           export CI=false
           export GENERATE_SOURCEMAP=false
+          
+          # Remove stray CNAME before build (sometimes in public/)
+          rm -f public/CNAME
           
           # Try with yarn first, then npm as fallback
           if ! yarn build; then
