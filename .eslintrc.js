@@ -50,3 +50,8 @@ module.exports = {
     jest: 'readonly',
   },
 };
+// eslint-disable-next-line no-unused-vars
+const actionTypes = {
+  FETCH_DATA: 'FETCH_DATA',
+  SET_LOADING: 'SET_LOADING',
+};
