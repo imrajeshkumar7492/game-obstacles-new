@@ -501,7 +501,6 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: frontend/build
-        cname: ${{ secrets.PRODUCTION_DOMAIN }}
 
     - name: Create Release
       uses: actions/create-release@v1
