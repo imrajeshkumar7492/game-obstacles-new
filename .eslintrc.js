@@ -40,4 +40,7 @@ module.exports = {
     'node_modules/',
     'coverage/',
   ],
+  globals: {
+    jest: 'readonly',
+  },
 };
