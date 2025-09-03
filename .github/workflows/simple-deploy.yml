@@ -20,78 +20,87 @@ jobs:
       id-token: write
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'yarn'
-        cache-dependency-path: frontend/yarn.lock
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
 
-    - name: Install dependencies with retry
-      run: |
-        cd frontend
-        echo "🔧 Installing frontend dependencies..."
-        set -e
-        for i in {1..3}; do
-          echo "📦 Attempt $i to install dependencies..."
-          if yarn install --frozen-lockfile --network-timeout 300000; then
-            echo "✅ Dependencies installed successfully with yarn"
-            break
-          elif yarn install --network-timeout 300000; then
-            echo "✅ Dependencies installed with yarn (without frozen lockfile)"
-            break
-          elif npm ci; then
-            echo "✅ Dependencies installed with npm"
-            break
-          elif [ $i -eq 3 ]; then
-            echo "❌ All installation attempts failed"
-            exit 1
+      - name: Install dependencies with retry
+        run: |
+          cd frontend
+          echo "🔧 Installing frontend dependencies..."
+          set -e
+          for i in {1..3}; do
+            echo "📦 Attempt $i to install dependencies..."
+            if yarn install --frozen-lockfile --network-timeout 300000; then
+              echo "✅ Dependencies installed successfully with yarn"
+              break
+            elif yarn install --network-timeout 300000; then
+              echo "✅ Dependencies installed with yarn (without frozen lockfile)"
+              break
+            elif npm ci; then
+              echo "✅ Dependencies installed with npm"
+              break
+            elif [ $i -eq 3 ]; then
+              echo "❌ All installation attempts failed"
+              exit 1
+            fi
+            echo "⏳ Retrying in 10 seconds..."
+            sleep 10
+          done
+
+      - name: Run tests
+        run: |
+          cd frontend
+          echo "🧪 Running frontend tests..."
+          CI=true yarn test --coverage --watchAll=false || echo "⚠️ Some tests failed but continuing deployment"
+
+      - name: Build application
+        run: |
+          cd frontend
+          echo "🏗️ Building application..."
+          yarn build || npm run build
+
+      # === Deploy Production (main branch) ===
+      - name: Deploy to GitHub Pages (Production)
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/build
+
+      # === Deploy Staging (develop branch) ===
+      - name: Deploy to GitHub Pages (Staging)
+        if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/build
+          destination_dir: staging
+
+      - name: Output deployment info
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "🚀 Production deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          else
+            echo "🚀 Staging deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/"
           fi
-          echo "⏳ Retrying in 10 seconds..."
-          sleep 10
-        done
+          echo ""
+          echo "📋 Next steps:"
+          echo "- Enable GitHub Pages in Settings → Pages if not already enabled"
+          echo "- Set source to 'gh-pages' branch"
+          echo "- Wait 2-3 minutes for deployment to be live"
 
-    - name: Run tests
-      run: |
-        cd frontend
-        echo "🧪 Running frontend tests..."
-        CI=true yarn test --coverage --watchAll=false || echo "⚠️ Some tests failed but continuing deployment"
-
-    - name: Build application
-      run: |
-        cd frontend
-        echo "🏗️ Building application..."
-        yarn build || npm run build
-
-    - name: Deploy to GitHub Pages
-      if: github.event_name != 'pull_request'
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: frontend/build
-        destination_dir: ${{ github.ref == 'refs/heads/main' && '' || 'staging' }}
-
-    - name: Output deployment info
-      if: github.event_name != 'pull_request'
-      run: |
-        echo "🎉 Deployment completed successfully!"
-        if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-          echo "🚀 Production deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-        else
-          echo "🚀 Staging deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/"
-        fi
-        echo ""
-        echo "📋 Next steps:"
-        echo "- Enable GitHub Pages in Settings → Pages if not already enabled"
-        echo "- Set source to 'gh-pages' branch"
-        echo "- Wait 2-3 minutes for deployment to be live"
-
-    - name: PR Comment
-      if: github.event_name == 'pull_request'
-      run: |
-        echo "✅ Build successful! This PR is ready for deployment."
-        echo "When merged to main → Production deployment"
-        echo "When merged to develop → Staging deployment"
+      - name: PR Comment
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "✅ Build successful! This PR is ready for deployment."
+          echo "When merged to main → Production deployment"
+          echo "When merged to develop → Staging deployment"
