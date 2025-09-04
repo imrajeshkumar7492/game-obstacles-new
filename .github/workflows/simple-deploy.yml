@@ -35,7 +35,6 @@ jobs:
         run: |
           cd frontend
           echo "🔧 Installing frontend dependencies..."
-          # Use only yarn for consistency (no mixed package managers)
           yarn install --frozen-lockfile --network-timeout 300000
           echo "✅ Dependencies installed successfully"
           
@@ -52,7 +51,6 @@ jobs:
           echo "🔍 Running linter..."
           yarn lint || {
             echo "⚠️ Linting issues found but continuing (non-blocking)"
-            echo "This is expected due to ESLint configuration - will be addressed in future updates"
             exit 0
           }
           
@@ -66,33 +64,31 @@ jobs:
         run: |
           cd frontend
           echo "🏗️ Building application..."
-          # Proper React 19 build configuration
           export NODE_OPTIONS="--max-old-space-size=4096"
           export GENERATE_SOURCEMAP=false
           export REACT_APP_GENERATE_SOURCEMAP=false
           
-          # Remove stray CNAME before build
           rm -f public/CNAME
-          
-          # Build with yarn (consistent with install)
           yarn build
-          
-          # Remove any CNAME file from build directory
           rm -f build/CNAME
-          echo "🗑️ Removed CNAME file to use default GitHub Pages URL"
           
-          # Verify build directory exists and has content
           if [ ! -d "build" ]; then
             echo "❌ Build directory not found"
             exit 1
           fi
-          
           if [ ! "$(ls -A build)" ]; then
             echo "❌ Build directory is empty"
             exit 1
           fi
           
           echo "✅ Build completed successfully"
+
+      - name: Debug Git Info
+        run: |
+          echo "🔎 Debugging repo & build directory..."
+          git config --list
+          git remote -v
+          ls -lah frontend/build
           
       - name: Deploy to GitHub Pages (main → production)
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -100,6 +96,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
+          publish_branch: gh-pages
           force_orphan: true
           
       - name: Deploy to GitHub Pages (develop → staging)
@@ -108,7 +105,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
-          destination_dir: staging
+          publish_branch: gh-pages-staging
           force_orphan: true
           
       - name: Output deployment info
@@ -122,8 +119,9 @@ jobs:
           fi
           echo ""
           echo "📋 Next steps:"
-          echo "- Enable GitHub Pages in Settings → Pages if not already enabled"
-          echo "- Set source to 'gh-pages' branch"
+          echo "- Go to Settings → Pages"
+          echo "- Set source to 'gh-pages' branch for production"
+          echo "- (Optional) Set source to 'gh-pages-staging' if you want a separate staging site"
           echo "- Wait 2-3 minutes for deployment to be live"
           
       - name: PR Comment
