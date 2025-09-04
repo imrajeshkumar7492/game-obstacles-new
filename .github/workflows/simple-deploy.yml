@@ -22,7 +22,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        
+        with:
+          fetch-depth: 0   # fetch full history for gh-pages push
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -65,7 +67,6 @@ jobs:
         run: |
           cd frontend
           echo "🧪 Running frontend tests..."
-          # Force disable treating warnings as errors
           export ESLINT_NO_DEV_ERRORS=true
           export CI=false
           yarn test --coverage --watchAll=false --passWithNoTests --verbose || {
@@ -91,7 +92,6 @@ jobs:
             echo "✅ No CNAME file found in public directory"
           fi
           
-          # Try with yarn first, then npm as fallback
           if ! yarn build; then
             echo "⚠️ Yarn build failed, trying with npm..."
             npm run build || {
@@ -100,15 +100,13 @@ jobs:
             }
           fi
           
-          # Ensure no CNAME file exists in build directory (forces default GitHub Pages URL)
           if [ -f "build/CNAME" ]; then
-            echo "🗑️ Removing CNAME from build directory to force default GitHub Pages URL"
+            echo "🗑️ Removing CNAME from build directory"
             rm -f build/CNAME
           else
-            echo "✅ No CNAME file found in build directory - will use default GitHub Pages URL"
+            echo "✅ No CNAME file found in build directory"
           fi
           
-          # Verify build directory exists and list contents
           if [ ! -d "build" ]; then
             echo "❌ Build directory not found"
             exit 1
@@ -116,7 +114,7 @@ jobs:
           
           echo "📁 Build directory contents:"
           ls -la build/ | head -10
-          echo "✅ Build completed successfully for default GitHub Pages deployment"
+          echo "✅ Build completed successfully"
           
       - name: Deploy to GitHub Pages (main → production)
         if: github.ref == 'refs/heads/main'
@@ -124,7 +122,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
-          cname: false  # Explicitly disable custom domain
           
       - name: Deploy to GitHub Pages (develop → staging)
         if: github.ref == 'refs/heads/develop'
@@ -133,7 +130,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: frontend/build
           destination_dir: staging
-          cname: false  # Explicitly disable custom domain
           
       - name: Output deployment info
         if: github.event_name != 'pull_request'
@@ -143,10 +139,8 @@ jobs:
           echo ""
           if [ "${GITHUB_REF}" == "refs/heads/main" ]; then
             echo "🚀 Production deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-            echo "🔗 Your app is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           else
             echo "🚀 Staging deployed to: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/"
-            echo "🔗 Your staging app is available at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/staging/"
           fi
           echo ""
           echo "📋 Next steps:"
@@ -154,8 +148,6 @@ jobs:
           echo "- Set source to 'gh-pages' branch"
           echo "- Remove any custom domain from repository settings if present"
           echo "- Wait 2-3 minutes for deployment to be live"
-          echo ""
-          echo "ℹ️  Note: This deployment specifically avoids custom domains and uses the default GitHub Pages URL"
           
       - name: PR Comment
         if: github.event_name == 'pull_request'
