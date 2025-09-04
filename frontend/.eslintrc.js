@@ -43,4 +43,13 @@ module.exports = {
     'dist/',
     'public/',
   ],
+  globals: {
+    jest: 'readonly',
+    test: 'readonly',
+    expect: 'readonly',
+    describe: 'readonly',
+    it: 'readonly',
+    beforeEach: 'readonly',
+    afterEach: 'readonly',
+  },
 };
