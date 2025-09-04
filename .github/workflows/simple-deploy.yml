@@ -45,14 +45,14 @@ jobs:
           echo "📊 Updating browserslist database..."
           npx update-browserslist-db@latest
           
-      - name: Run linter
+      - name: Run linter (non-blocking)
         continue-on-error: true
         run: |
           cd frontend
           echo "🔍 Running linter..."
-          # Use legacy eslint configuration for now to avoid ESLint v9 migration issues
           yarn lint || {
             echo "⚠️ Linting issues found but continuing (non-blocking)"
+            echo "This is expected due to ESLint configuration - will be addressed in future updates"
             exit 0
           }
           
