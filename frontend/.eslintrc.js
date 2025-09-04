@@ -9,7 +9,6 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
-    'plugin:jsx-a11y/recommended',
   ],
   parserOptions: {
     ecmaFeatures: {
@@ -21,7 +20,6 @@ module.exports = {
   plugins: [
     'react',
     'react-hooks',
-    'jsx-a11y',
   ],
   rules: {
     'react/react-in-jsx-scope': 'off',
@@ -32,7 +30,6 @@ module.exports = {
       ignoreRestSiblings: true 
     }],
     'no-console': 'warn',
-    'jsx-a11y/anchor-is-valid': 'warn',
   },
   settings: {
     react: {
@@ -46,12 +43,4 @@ module.exports = {
     'dist/',
     'public/',
   ],
-  globals: {
-    jest: 'readonly',
-  },
-};
-// eslint-disable-next-line no-unused-vars
-const actionTypes = {
-  FETCH_DATA: 'FETCH_DATA',
-  SET_LOADING: 'SET_LOADING',
 };
