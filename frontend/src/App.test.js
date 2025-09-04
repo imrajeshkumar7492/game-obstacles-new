@@ -1,16 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-// Mock any components that might cause issues
-jest.mock('./components/GameBoard', () => {
-  return function MockGameBoard() {
-    return <div data-testid="game-board">Game Board</div>;
+// Mock the actual component that exists
+jest.mock('./components/FlappyBirdGame', () => {
+  return function MockFlappyBirdGame() {
+    return <div data-testid="flappy-bird-game">Flappy Bird Game</div>;
   };
 });
 
-jest.mock('./components/ScoreBoard', () => {
-  return function MockScoreBoard() {
-    return <div data-testid="score-board">Score Board</div>;
+// Mock the Toaster component to avoid toast hook issues
+jest.mock('./components/ui/toaster', () => {
+  return {
+    Toaster: function MockToaster() {
+      return <div data-testid="toaster">Toaster</div>;
+    }
   };
 });
 
@@ -24,6 +27,11 @@ test('app has correct structure', () => {
   expect(container.firstChild).not.toBeNull();
 });
 
+test('renders flappy bird game', () => {
+  render(<App />);
+  expect(screen.getByTestId('flappy-bird-game')).toBeInTheDocument();
+});
+
 // Basic smoke tests
 describe('App smoke tests', () => {
   test('renders without error', () => {
@@ -33,5 +41,12 @@ describe('App smoke tests', () => {
   test('contains main app container', () => {
     const { container } = render(<App />);
     expect(container.querySelector('.App') || container.firstChild).toBeTruthy();
+  });
+
+  test('contains flappy bird game component', () => {
+    render(<App />);
+    const gameComponent = screen.getByTestId('flappy-bird-game');
+    expect(gameComponent).toBeInTheDocument();
+    expect(gameComponent).toHaveTextContent('Flappy Bird Game');
   });
 });
