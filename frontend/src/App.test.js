@@ -8,6 +8,15 @@ jest.mock('./components/FlappyBirdGame', () => {
   };
 });
 
+// Mock the Toaster component to avoid toast hook issues
+jest.mock('./components/ui/toaster', () => {
+  return {
+    Toaster: function MockToaster() {
+      return <div data-testid="toaster">Toaster</div>;
+    }
+  };
+});
+
 test('renders app without crashing', () => {
   const { container } = render(<App />);
   expect(container).toBeInTheDocument();
